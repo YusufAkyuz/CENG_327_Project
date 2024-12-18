@@ -1,35 +1,55 @@
 import cv2
-
-from image_handler import ImageHandler
+import os
 from steganography import Steganography
 
 def main():
-    input_folder = "InputImages"
-    output_folder = "outputs"
-    image_handler = ImageHandler(input_folder, output_folder)
     steganography = Steganography()
 
     while True:
-        print("\n1. Şifrelenmiş resimleri göster")
-        print("2. Şifrelenmiş ve şifrelenmemiş resimleri göster")
-        print("3. Encode edilmiş bir resmi decode et")
-        print("4. Çıkış\n")
+        print("\n1. İki resmi kullanarak metin encode et (cover -> stego)")
+        print("2. İki resmin farkından metin decode et (cover ve stego)")
+        print("3. Çıkış\n")
         choice = input("Seçiminizi yapınız: ")
 
         if choice == "1":
-            image_handler.read_images()
-            encoded_images = steganography.distribute_text(image_handler.images, input("Metni giriniz: "))
-            image_handler.save_images(encoded_images)
-            image_handler.display_images(image_handler.images)
+            cover_path = input("Cover resmin yolunu girin: ")
+            if not os.path.exists(cover_path):
+                print("Cover resmi bulunamadı.")
+                continue
+
+            text = input("Gizlenecek metni girin: ")
+            cover_image = cv2.imread(cover_path)
+            if cover_image is None:
+                print("Cover resmi okunamadı.")
+                continue
+
+            stego_image = steganography.encode_text(cover_image, text)
+
+            output_path = "stego_image.png"
+            cv2.imwrite(output_path, stego_image)
+            print(f"Encode işlemi tamamlandı. Yeni resim '{output_path}' olarak kaydedildi.")
+
         elif choice == "2":
-            image_handler.read_images()
-            print("Bu seçenek henüz implement edilmedi.")
-        elif choice == "3":
-            path = input("Şifresi çözülecek resmin yolu: ")
-            image = cv2.imread(path)
-            hidden_text = steganography.decode_text(image)
+            cover_path = input("Cover resmin yolunu girin: ")
+            stego_path = input("Stego resmin yolunu girin: ")
+            if not os.path.exists(cover_path) or not os.path.exists(stego_path):
+                print("Cover veya stego resmi bulunamadı.")
+                continue
+
+            cover_image = cv2.imread(cover_path)
+            stego_image = cv2.imread(stego_path)
+            if cover_image is None or stego_image is None:
+                print("Resim(ler) okunamadı.")
+                continue
+
+            if cover_image.shape != stego_image.shape:
+                print("Cover ve stego resimlerin boyutları aynı olmalı.")
+                continue
+
+            hidden_text = steganography.decode_text(cover_image, stego_image)
             print(f"Gizlenen metin: {hidden_text}")
-        elif choice == "4":
+
+        elif choice == "3":
             print("Çıkış yapılıyor...")
             break
         else:
