@@ -15,7 +15,6 @@ class ImageHandler:
         else:
             raise FileNotFoundError("The specified image file could not be found.")
 
-
     def save_image(self, image, filename):
         """Saves the encoded image to the specified output folder."""
         if self.output_folder and not os.path.exists(self.output_folder):
