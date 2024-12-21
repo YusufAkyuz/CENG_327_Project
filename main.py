@@ -1,5 +1,6 @@
 import cv2
 import os
+import matplotlib.pyplot as plt
 
 from steganography import Steganography
 
@@ -46,7 +47,7 @@ def main():
                 hidden_texts.append(input(f"\t{i + 1}. metni giriniz: "))
             print("*** Metinler kaydedildi ***\n")
 
-            print("Resimler için encode işlemi başladı.")
+            print("Resimler için encode işlemi başladı...\n")
 
             for i in range(len(cover_images_and_stego_images)):
                 cover_image_path = list(cover_images_and_stego_images.keys())[i]
@@ -57,10 +58,29 @@ def main():
                 stego_image = steganography.encode_text(cover_image, hidden_texts[i])
                 cv2.imwrite(path_of_stego_images[i], stego_image)
                 cover_images_and_stego_images[cover_image_path] = stego_image
-                print(f"\t{i+1} resim için encode işlemi tamamlandı.")
+                print(f"{i + 1}.resim için encode işlemi tamamlandı.")
+                print("Resmi görüntülemek için 1'e basınız.")
+                user_input = input()
+                if user_input == "1":
+                    print("Cover Image and Stego Image:")
+                    cover_image_rgb = cv2.cvtColor(cover_image, cv2.COLOR_BGR2RGB)
+                    plt.imshow(cover_image_rgb)
+                    plt.title(f"Cover Image {i + 1}")
+                    plt.axis('off')
+                    plt.show()
+                    stego_image_rgb = cv2.cvtColor(stego_image, cv2.COLOR_BGR2RGB)
+                    plt.imshow(stego_image_rgb)
+                    plt.title(f"Stego Image {i + 1}")
+                    plt.axis('off')
+                    plt.show()
+                    print("\n\n")
+                else:
+                    continue
 
             print("*** Resimler encode edildi ***\n")
             print("******************************************************************************************\n")
+
+
 
 
         elif user_input == "d":
