@@ -1,17 +1,24 @@
 import cv2
 import numpy as np
+import os
 
 
 class Steganography:
     @staticmethod
     def _int_to_bin(data):
+        """
+        Converts input string into its binary representation.
+        """
         if isinstance(data, str):
             return [format(ord(char), "08b") for char in data]
         else:
-            raise TypeError("Veri türü desteklenmiyor, lütfen string girin.")
+            raise TypeError("Unsupported data type, please provide a string.")
 
     @staticmethod
     def _bin_to_str(binary_data):
+        """
+        Converts binary data back into a string, stopping at the null character.
+        """
         text = ""
         for i in range(0, len(binary_data), 8):
             byte = binary_data[i:i + 8]
@@ -23,22 +30,30 @@ class Steganography:
 
     def encode_text(self, cover_image, text):
         """
-        cover_image: Orijinal resim (cv2.imread ile okunmuş bir numpy array)
-        text: Gizlenecek metin
+        Encodes a hidden text into an image using a difference-based approach.
 
-        Bu yöntem LSB yerine iki resim arasındaki farkı kullanarak
-        metni gizler. Cover resmi temel alınarak, bit '1' olan
-        piksellerin mavi kanal değerini +1 artırıyoruz.
-        Bit '0' olanlarda değişiklik yapmıyoruz.
+        Parameters:
+        cover_image: Original image (numpy array loaded using cv2.imread)
+        text: Text to be hidden
+
+        Method:
+        This approach hides text by modifying the blue channel of pixels based
+        on the binary representation of the text. For a binary '1', the blue
+        channel value is incremented by 1 (unless it's already 255). For a
+        binary '0', no change is made.
         """
-        # Metni binary formatına çevir ve bitlere aç
+
+        if not os.path.exists("StegoImages"):
+            os.makedirs("StegoImages")
+
+        # Convert text to binary and concatenate bits
         binary_text = ""
         for ch in self._int_to_bin(text):
             binary_text += ch
-        # Mesaj sonuna terminal karakteri ekleniyor
+        # Add a terminal character to signify the end of the text
         binary_text += "00000000"
 
-        # Cover resmin kopyasını al (Stego resim)
+        # Create a copy of the cover image (Stego image)
         stego_image = cover_image.copy()
         h, w, c = cover_image.shape
 
@@ -49,15 +64,14 @@ class Steganography:
                     bit = binary_text[data_index]
                     b, g, r = stego_image[y, x]
 
-                    # bit '1' ise mavi kanalı 1 artır (eğer 255 değilse)
+                    # If the bit is '1', increment the blue channel (if it's not 255)
                     if bit == '1':
                         if b < 255:
                             b += 1
                         else:
-                            # eğer b zaten 255 ise, b'yi 1 azalt.
-                            # (Bu durum çok ender olacak, ama önlem olarak)
+                            # If blue channel is already 255, decrement it to handle edge cases
                             b -= 1
-                    # bit '0' için değişiklik yok
+                    # If the bit is '0', no changes are made
                     stego_image[y, x] = [b, g, r]
                     data_index += 1
                 else:
@@ -69,12 +83,16 @@ class Steganography:
 
     def decode_text(self, cover_image, stego_image):
         """
-        cover_image: Orijinal resim
-        stego_image: Encode edilmiş resim
+        Decodes the hidden text from an image.
 
-        İki resmi piksel piksel karşılaştırır.
-        Eğer stego pikselin mavi kanalı coverdan farklı ise bit '1', aynı ise bit '0'.
-        Bu şekilde binary string elde edilip metne dönüştürülür.
+        Parameters:
+        cover_image: Original image
+        stego_image: Encoded image
+
+        Method:
+        Compares each pixel of the stego image with the corresponding pixel in the
+        cover image. If the blue channel value differs, it indicates a binary '1';
+        otherwise, it's a binary '0'. The binary string is then converted back into text.
         """
         h, w, c = cover_image.shape
         binary_data = ""
@@ -84,7 +102,7 @@ class Steganography:
                 cb, cg, cr = cover_image[y, x]
                 sb, sg, sr = stego_image[y, x]
 
-                # Eğer stego resimdeki piksel coverdan farklıysa bit '1', değilse '0'
+                # If the blue channel in the stego image differs, it's a '1'; otherwise, '0'
                 if sb != cb:
                     binary_data += "1"
                 else:
@@ -94,5 +112,9 @@ class Steganography:
         return text
 
     def distribute_text(self, images, text):
-        # Bu fonksiyon bu yaklaşımda kullanılmıyor ancak varlığını koruyoruz.
-        raise NotImplementedError("Bu yöntemde distribute_text kullanılmıyor.")
+        """
+        Placeholder for distributing text across multiple images.
+
+        This function is not used in this approach but is kept for potential extensions.
+        """
+        raise NotImplementedError("The distribute_text method is not used in this approach.")
