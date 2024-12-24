@@ -88,3 +88,28 @@ class SteganographyApp:
 
         cv2.imwrite(save_path, stego_image)
         messagebox.showinfo("Success", f"Stego image saved to {save_path}")
+
+    def decode_text(self):
+        if not self.cover_image_path or not self.stego_image_path:
+            messagebox.showerror("Error", "Please select both a cover image and a stego image.")
+            return
+
+        cover_image = cv2.imread(self.cover_image_path)
+        stego_image = cv2.imread(self.stego_image_path)
+
+        if cover_image is None or stego_image is None:
+            messagebox.showerror("Error", "Failed to load images.")
+            return
+
+        if cover_image.shape != stego_image.shape:
+            messagebox.showerror("Error", "Image dimensions do not match.")
+            return
+
+        hidden_text = self.steganography.decode_text(cover_image, stego_image)
+        self.result_label.config(text=f"Decoded Text: {hidden_text}")
+
+
+if __name__ == "__main__":
+    root = Tk()
+    app = SteganographyApp(root)
+    root.mainloop()
