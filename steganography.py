@@ -7,30 +7,29 @@ class Steganography:
     @staticmethod
     def _int_to_bin(data):
         """
-        Converts input string into its binary representation.
+        Converts input string into its binary representation (supports UTF-8 for Turkish characters).
         """
         if isinstance(data, str):
-            return [format(ord(char), "08b") for char in data]
+            return [format(byte, "08b") for byte in data.encode('utf-8')]
         else:
             raise TypeError("Unsupported data type, please provide a string.")
 
     @staticmethod
     def _bin_to_str(binary_data):
         """
-        Converts binary data back into a string, stopping at the null character.
+        Converts binary data back into a UTF-8 encoded string, stopping at the null character.
         """
-        text = ""
+        bytes_list = []
         for i in range(0, len(binary_data), 8):
             byte = binary_data[i:i + 8]
-            char = chr(int(byte, 2))
-            if char == "\0":
+            if byte == "00000000":  # Stop at the null terminator
                 break
-            text += char
-        return text
+            bytes_list.append(int(byte, 2))
+        return bytes(bytes_list).decode('utf-8')
 
     def encode_text(self, cover_image, text):
         """
-        Encodes a hidden text into an image using a difference-based approach.
+        Encodes a hidden UTF-8 text into an image.
 
         Parameters:
         cover_image: Original image (numpy array loaded using cv2.imread)
@@ -42,7 +41,6 @@ class Steganography:
         channel value is incremented by 1 (unless it's already 255). For a
         binary '0', no change is made.
         """
-
         if not os.path.exists("StegoImages"):
             os.makedirs("StegoImages")
 
@@ -50,8 +48,7 @@ class Steganography:
         binary_text = ""
         for ch in self._int_to_bin(text):
             binary_text += ch
-        # Add a terminal character to signify the end of the text
-        binary_text += "00000000"
+        binary_text += "00000000"  # Null terminator for UTF-8 text
 
         # Create a copy of the cover image (Stego image)
         stego_image = cover_image.copy()
@@ -83,7 +80,7 @@ class Steganography:
 
     def decode_text(self, cover_image, stego_image):
         """
-        Decodes the hidden text from an image.
+        Decodes the hidden UTF-8 text from an image.
 
         Parameters:
         cover_image: Original image
