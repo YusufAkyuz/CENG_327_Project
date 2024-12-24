@@ -1,102 +1,46 @@
 import cv2
-import os
-
+from tkinter import Tk, Label, Button, Entry, filedialog, messagebox
 from steganography import Steganography
 
+import os
+import platform
 
-def main():
-    steganography = Steganography()
+# MacOS version compatibility
+if platform.system() == "Darwin":
+    os.environ["TK_SILENCE_DEPRECATION"] = "1"
+    os.environ["NO_AT_BRIDGE"] = "1"
 
-    # Dictionary to store cover images and their corresponding stego images
-    cover_images_and_stego_images = {
-        "InputImages/1.png": None,
-        "InputImages/2.png": None,
-        "InputImages/3.png": None,
-        "InputImages/4.png": None,
-        "InputImages/5.png": None,
-        "InputImages/6.png": None,
-        "InputImages/7.png": None,
-        "InputImages/8.png": None,
-        "InputImages/9.png": None
-    }
+class SteganographyApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Steganography Tool")
+        self.steganography = Steganography()
 
-    # List to store hidden texts
-    hidden_texts = []
+        self.cover_image_path = None
+        self.stego_image_path = None
 
-    # List of paths for stego images
-    path_of_stego_images = ["StegoImages/1.png",
-                            "StegoImages/2.png",
-                            "StegoImages/3.png",
-                            "StegoImages/4.png",
-                            "StegoImages/5.png",
-                            "StegoImages/6.png",
-                            "StegoImages/7.png",
-                            "StegoImages/8.png",
-                            "StegoImages/9.png"]
+        Label(root, text="Steganography Tool", font=("Helvetica", 16)).pack(pady=10)
 
-    while True:
-        print("Press 'e' to start the encoding process.")
-        print("Press 'd' to start the decoding process.")
-        print("Press 'q' to exit.")
-        user_input = input("Your choice: ")
+        # Cover Image Selection
+        Button(root, text="Select Cover Image", command=self.select_cover_image).pack(pady=5)
+        self.cover_image_label = Label(root, text="No cover image selected")
+        self.cover_image_label.pack()
 
-        if user_input == "e":
-            print(f"\nCover images loaded. There are {len(cover_images_and_stego_images)} cover images.\n")
-            print("******************************************************************************************\n")
-            print(f"Enter {len(cover_images_and_stego_images)} hidden texts for the cover images.")
+        # Text Input for Encoding
+        Label(root, text="Enter text to encode:").pack()
+        self.text_input = Entry(root, width=50)
+        self.text_input.pack()
 
-            # Collect hidden texts from the user
-            for i in range(len(cover_images_and_stego_images)):
-                hidden_texts.append(input(f"\tEnter hidden text {i + 1}: "))
-            print("*** Texts saved ***\n")
+        Button(root, text="Encode Text", command=self.encode_text).pack(pady=10)
 
-            print("Encoding process started for images.")
+        # Stego Image Selection for Decoding
+        Button(root, text="Select Stego Image", command=self.select_stego_image).pack(pady=5)
+        self.stego_image_label = Label(root, text="No stego image selected")
+        self.stego_image_label.pack()
 
-            # Perform encoding for each cover image
-            for i in range(len(cover_images_and_stego_images)):
-                cover_image_path = list(cover_images_and_stego_images.keys())[i]
-                cover_image = cv2.imread(cover_image_path)
-                if cover_image is None:
-                    print(f"Cover image {i + 1} could not be read.")
-                    continue
-                stego_image = steganography.encode_text(cover_image, hidden_texts[i])
-                cv2.imwrite(path_of_stego_images[i], stego_image)
-                cover_images_and_stego_images[cover_image_path] = stego_image
-                print(f"\tEncoding completed for image {i + 1}.")
+        Button(root, text="Decode Text", command=self.decode_text).pack(pady=10)
 
-            print("*** All images encoded ***\n")
-            print("******************************************************************************************\n")
+        # Output Label
+        self.result_label = Label(root, text="", font=("Helvetica", 12), fg="green")
+        self.result_label.pack(pady=10)
 
-        elif user_input == "d":
-            if not hidden_texts:
-                print("Error: Encoding must be completed before decoding.")
-                continue
-
-            print("\n\nDecoding process started.")
-            # Perform decoding for each pair of cover and stego images
-            for i in range(len(cover_images_and_stego_images)):
-                cover_image_path = list(cover_images_and_stego_images.keys())[i]
-                cover_image = cv2.imread(cover_image_path)
-                stego_image = cv2.imread(path_of_stego_images[i])
-                if cover_image is None or stego_image is None:
-                    print(f"Images for pair {i + 1} could not be read.")
-                    continue
-                if cover_image.shape != stego_image.shape:
-                    print(f"Dimensions mismatch for pair {i + 1}.")
-                    continue
-                hidden_text = steganography.decode_text(cover_image, stego_image)
-                print(f"\tHidden text for image {i + 1}: {hidden_text}")
-
-            print("\n*** Decoding completed for all images. ***\n")
-
-        elif user_input == "q":
-            print("Exiting.")
-            break
-
-        else:
-            print("Error: Invalid choice. Please try again.")
-            continue
-
-
-if __name__ == "__main__":
-    main()
