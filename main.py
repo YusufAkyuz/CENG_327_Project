@@ -44,3 +44,10 @@ class SteganographyApp:
         self.result_label = Label(root, text="", font=("Helvetica", 12), fg="green")
         self.result_label.pack(pady=10)
 
+    def select_cover_image(self):
+        self.cover_image_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.png;*.jpg;*.jpeg")])
+        if not self.cover_image_path:
+            self.cover_image_label.config(text="No cover image selected")
+        else:
+            self.cover_image_label.config(text=self.cover_image_path)
+
