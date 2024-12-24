@@ -5,7 +5,7 @@ class ImageHandler:
     def __init__(self, input_folder=None, output_folder=None):
         """Initialize the ImageHandler class with input and output folder paths."""
         self.input_folder = input_folder
-        self.output_folder = output_folder if output_folder else os.getcwd()  # Varsayılan çıkış klasörü
+        self.output_folder = output_folder if output_folder else os.getcwd()
 
     def load_image(self, image_path):
         """Loads a single image from the specified path."""

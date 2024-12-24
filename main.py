@@ -58,3 +58,12 @@ class SteganographyApp:
         except Exception as e:
             print(f"Error during file selection: {e}")
             messagebox.showerror("Error", f"An error occurred: {e}")
+
+    def select_stego_image(self):
+        self.stego_image_path = filedialog.askopenfilename(
+            filetypes=[("PNG Files", "*.png"), ("JPEG Files", "*.jpg"), ("JPEG Files", "*.jpeg"),
+                       ("All Files", "*.*")])
+        if not self.stego_image_path:
+            self.stego_image_label.config(text="No stego image selected")
+        else:
+            self.stego_image_label.config(text=self.stego_image_path)
