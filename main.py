@@ -67,3 +67,24 @@ class SteganographyApp:
             self.stego_image_label.config(text="No stego image selected")
         else:
             self.stego_image_label.config(text=self.stego_image_path)
+
+    def encode_text(self):
+        if not self.cover_image_path or not self.text_input.get():
+            messagebox.showerror("Error", "Please select a cover image and enter text to encode.")
+            return
+
+        cover_image = cv2.imread(self.cover_image_path)
+        if cover_image is None:
+            messagebox.showerror("Error", "Failed to load cover image.")
+            return
+
+        text = self.text_input.get()
+        stego_image = self.steganography.encode_text(cover_image, text)
+
+        save_path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG Image", "*.png")])
+        if not save_path:
+            messagebox.showerror("Error", "No file path specified.")
+            return
+
+        cv2.imwrite(save_path, stego_image)
+        messagebox.showinfo("Success", f"Stego image saved to {save_path}")
