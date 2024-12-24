@@ -45,9 +45,16 @@ class SteganographyApp:
         self.result_label.pack(pady=10)
 
     def select_cover_image(self):
-        self.cover_image_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.png;*.jpg;*.jpeg")])
-        if not self.cover_image_path:
-            self.cover_image_label.config(text="No cover image selected")
-        else:
+        try:
+            self.cover_image_path = filedialog.askopenfilename(
+                title="Select Cover Image",
+                initialdir="/",
+                filetypes=[("PNG Files", ".png"), ("JPEG Files", ".jpg"), ("JPEG Files", "*.jpeg"),
+                           ("All Files", ".")])
+            if not self.cover_image_path:
+                self.cover_image_label.config(text="No cover image selected")
+                return
             self.cover_image_label.config(text=self.cover_image_path)
-
+        except Exception as e:
+            print(f"Error during file selection: {e}")
+            messagebox.showerror("Error", f"An error occurred: {e}")
